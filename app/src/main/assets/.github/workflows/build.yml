@@ -1,0 +1,29 @@
+name: Build APK
+on: [push]
+jobs:
+  build:
+    runs-steps: ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Build with Gradle
+        run: |
+          echo "include ':app'" > settings.gradle
+          mkdir -p app/src/main
+          echo "apply plugin: 'com.android.application'" > app/build.gradle
+          echo "android { namespace 'com.untitled.scplayer'; compileSdk 34; defaultConfig { applicationId 'com.untitled.scplayer'; minSdk 24; targetSdk 34; versionCd 1; versionName '1.0'; } }" >> app/build.gradle
+          echo "dependencies { implementation 'androidx.appcompat:appcompat:1.6.1'; implementation 'com.squareup.okhttp3:okhttp:4.12.0'; }" >> app/build.gradle
+          chmod +x gradlew || true
+          # Авто-загрузка gradle wrapper если нет
+          gradle wrapper
+          ./gradlew assembleDebug
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
