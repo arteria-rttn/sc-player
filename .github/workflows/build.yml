@@ -14,9 +14,12 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Generate Project Files & Build
+      - name: Create Project & Build APK
         run: |
-          # Создаем структуру папок Android
+          # Очищаем всё лишнее, если там был мусор
+          rm -rf app build.gradle settings.gradle
+
+          # Создаем правильную структуру папок для Android
           mkdir -p app/src/main/java/com/untitled/scplayer
           mkdir -p app/src/main/assets
 
@@ -27,7 +30,6 @@ jobs:
               <uses-permission android:name="android.permission.INTERNET" />
               <application
                   android:allowBackup="true"
-                  android:icon="@mipmap/ic_launcher"
                   android:label="SC Player"
                   android:usesCleartextTraffic="true"
                   android:theme="@style/Theme.AppCompat.Light.NoActionBar">
@@ -43,7 +45,7 @@ jobs:
           </manifest>
           EOF
 
-          # 2. MainActivity.kt (мост для WebView)
+          # 2. MainActivity.kt (Kotlin мост для WebView)
           cat << 'EOF' > app/src/main/java/com/untitled/scplayer/MainActivity.kt
           package com.untitled.scplayer
 
@@ -67,11 +69,17 @@ jobs:
           }
           EOF
 
-          # 3. index.html (если он у тебя уже есть в репозитории, скрипт его не затрет, 
-          # но если папки assets не было — мы её создали. 
-          # Убедись, что index.html лежит по пути app/src/main/assets/index.html)
+          # 3. Переносим или создаем index.html (если он у тебя есть в корне или в старых папках)
+          if [ -f "index.html" ]; then
+              mv index.html app/src/main/assets/index.html
+          elif [ -f "app/src/main/assets/index.html" ]; then
+              echo "index.html already in place"
+          else
+              # Заглушка на случай, если html файл потерялся
+              echo "<html><body><h1>SC Player</h1></body></html>" > app/src/main/assets/index.html
+          fi
 
-          # 4. Конфиги Gradle
+          # 4. Gradle конфиги
           cat << 'EOF' > build.gradle
           buildscript {
               repositories {
@@ -116,6 +124,7 @@ jobs:
           }
           EOF
 
+          # Сборка
           gradle wrapper --gradle-version 8.5
           ./gradlew assembleDebug
 
