@@ -14,18 +14,55 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      - name: Build with Gradle
+      - name: Download Android Gradle Plugin & Build
         run: |
-          echo "include ':app'" > settings.gradle
+          cat << 'EOF' > build.gradle
+          buildscript {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+              dependencies {
+                  classpath 'com.android.tools.build:gradle:8.2.2'
+              }
+          }
+          allprojects {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          EOF
+
+          cat << 'EOF' > settings.gradle
+          rootProject.name = "SCPlayer"
+          include ':app'
+          EOF
+
           mkdir -p app/src/main
-          echo "apply plugin: 'com.android.application'" > app/build.gradle
-          echo "android { namespace 'com.untitled.scplayer'; compileSdk 34; defaultConfig { applicationId 'com.untitled.scplayer'; minSdk 24; targetSdk 34; versionCode 1; versionName '1.0'; } }" >> app/build.gradle
-          echo "dependencies { implementation 'androidx.appcompat:appcompat:1.6.1'; implementation 'com.squareup.okhttp3:okhttp:4.12.0'; }" >> app/build.gradle
-          gradle init --type basic --automation-language groovy --no-search-upward --unsupported-and-untested || true
-          gradle wrapper
+          cat << 'EOF' > app/build.gradle
+          plugins {
+              id 'com.android.application'
+          }
+          android {
+              namespace 'com.untitled.scplayer'
+              compileSdk 34
+              defaultConfig {
+                  applicationId 'com.untitled.scplayer'
+                  minSdk 24
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0"
+              }
+          }
+          dependencies {
+              implementation 'androidx.appcompat:appcompat:1.6.1'
+              implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+          }
+          EOF
+
+          # Генерируем Gradle Wrapper прямо на лету
+          gradle wrapper --gradle-version 8.5
           ./gradlew assembleDebug
 
       - name: Upload APK
