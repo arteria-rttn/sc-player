@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark" data-accent="red">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>untitled // app</title>
+    <style>
+        :root {
+            --accent: #e53935;
+            --accent-soft: rgba(229, 57, 53, 0.14);
+            --accent-glow: rgba(229, 57, 53, 0.35);
+        }
+        [data-accent="red"]    { --accent: #e53935; --accent-soft: rgba(229, 57, 53, 0.14); --accent-glow: rgba(229, 57, 53, 0.35); }
+        [data-accent="orange"] { --accent: #ff5500; --accent-soft: rgba(255, 85, 0, 0.14);  --accent-glow: rgba(255, 85, 0, 0.35); }
+        [data-accent="blue"]   { --accent: #2979ff; --accent-soft: rgba(41, 121, 255, 0.14); --accent-glow: rgba(41, 121, 255, 0.35); }
+        [data-accent="purple"] { --accent: #9c27b0; --accent-soft: rgba(156, 39, 176, 0.14); --accent-glow: rgba(156, 39, 176, 0.35); }
+        [data-accent="green"]  { --accent: #00c853; --accent-soft: rgba(0, 200, 83, 0.14);   --accent-glow: rgba(0, 200, 83, 0.35); }
+
+        [data-theme="dark"] {
+            --bg-page: #0c0c0e;
+            --bg-card: #16161a;
+            --bg-pill: #202026;
+            --text-main: #f4f4f6;
+            --text-muted: #787882;
+            --border: rgba(255, 255, 255, 0.08);
+            --wave-inactive: #2c2c34;
+        }
+        [data-theme="light"] {
+            --bg-page: #f5f5f7;
+            --bg-card: #ffffff;
+            --bg-pill: #f0f0f3;
+            --text-main: #18181b;
+            --text-muted: #8e8e98;
+            --border: rgba(0, 0, 0, 0.07);
+            --wave-inactive: #dcdce0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, Roboto, sans-serif; }
+        body {
+            background: var(--bg-page);
+            color: var(--text-main);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .top-bar { display: flex; justify-content: space-between; align-items: center; }
+        .dynamic-island {
+            background: #111113; color: #fff; padding: 6px 14px; border-radius: 999px;
+            display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; max-width: 190px;
+        }
+        .theme-controls {
+            display: flex; align-items: center; gap: 8px; background: var(--bg-card);
+            padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border);
+        }
+        .dot { width: 14px; height: 14px; border-radius: 50%; cursor: pointer; }
+        .theme-toggle { background: none; border: none; color: var(--text-main); font-size: 14px; }
+
+        .lyric-main { font-size: 24px; font-weight: 800; line-height: 1.15; }
+        .lyric-accent { color: var(--accent); text-shadow: 0 0 18px var(--accent-glow); }
+
+        .search-bar {
+            display: flex; gap: 8px; background: var(--bg-card); padding: 6px;
+            border-radius: 16px; border: 1px solid var(--border);
+        }
+        .search-bar input {
+            flex: 1; border: none; background: transparent; padding: 8px 12px;
+            color: var(--text-main); font-size: 14px; outline: none;
+        }
+        .btn-pill {
+            background: var(--accent); color: #fff; border: none; padding: 8px 16px;
+            border-radius: 12px; font-weight: 600; font-size: 13px;
+        }
+
+        .widget-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 22px; padding: 14px;
+        }
+        .widget-label { font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 8px; text-transform: uppercase; }
+        .speed-row { display: flex; align-items: center; justify-content: space-between; }
+        .speed-display { font-size: 24px; font-weight: 800; }
+        .speed-chip {
+            padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+            border: 1px solid var(--border); background: var(--bg-pill); color: var(--text-main);
+        }
+        .speed-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        .track-list { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+        .track-item {
+            display: flex; align-items: center; gap: 10px; padding: 8px;
+            border-radius: 12px; background: rgba(128,128,128,0.06);
+        }
+        .track-item.active { background: var(--accent-soft); border: 1px solid var(--accent); }
+        .track-item img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
+        .track-item-title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-item-artist { font-size: 11px; color: var(--text-muted); }
+
+        .player-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 26px; padding: 18px;
+        }
+        .cover-wrap { width: 100%; aspect-ratio: 1/1; border-radius: 18px; overflow: hidden; margin-bottom: 14px; }
+        .cover-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .track-title { font-size: 18px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-artist { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+
+        #tg-wave-canvas { width: 100%; height: 26px; display: block; }
+        .time-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin: 4px 0 12px; }
+
+        .transport-row { display: flex; justify-content: space-around; align-items: center; }
+        .icon-btn { background: none; border: none; color: var(--text-main); }
+        .play-circle {
+            width: 52px; height: 52px; border-radius: 50%; background: var(--text-main);
+            color: var(--bg-page); border: none; display: flex; align-items: center; justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="dynamic-island">
+        <span id="island-title" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">SC Native</span>
+    </div>
+    <div class="theme-controls">
+        <div class="dot" style="background:#e53935" onclick="setAccent('red')"></div>
+        <div class="dot" style="background:#ff5500" onclick="setAccent('orange')"></div>
+        <div class="dot" style="background:#2979ff" onclick="setAccent('blue')"></div>
+        <div class="dot" style="background:#9c27b0" onclick="setAccent('purple')"></div>
+        <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+    </div>
+</div>
+
+<div class="lyric-main">
+    Эти <span class="lyric-accent">блики</span> ослепляют, фоточки с <span class="lyric-accent">цепями</span>
+</div>
+
+<div class="search-bar">
+    <input type="text" id="search-input" placeholder="Молчат Дома, фонк, ремиксы..." onkeypress="if(event.key==='Enter') searchSC()">
+    <button class="btn-pill" onclick="searchSC()">Найти</button>
+</div>
+
+<div class="widget-card">
+    <div class="widget-label">✦ Скорость / Slowed</div>
+    <div class="speed-row">
+        <div class="speed-display" id="speed-val">1.0x</div>
+        <div>
+            <button class="speed-chip" onclick="setSpeed(0.75, this)">0.75x</button>
+            <button class="speed-chip" onclick="setSpeed(0.85, this)">0.85x</button>
+            <button class="speed-chip active" onclick="setSpeed(1.0, this)">1.0x</button>
+            <button class="speed-chip" onclick="setSpeed(1.2, this)">1.2x</button>
+        </div>
+    </div>
+</div>
+
+<div class="widget-card">
+    <div class="widget-label" id="list-label">▣ SoundCloud Поиск</div>
+    <div class="track-list" id="track-list">
+        <div style="font-size:12px; color:var(--text-muted);">Введи запрос и жми «Найти»</div>
+    </div>
+</div>
+
+<div class="player-card">
+    <div class="cover-wrap">
+        <img id="cover-img" src="https://placehold.co/500x500/18181b/e53935?text=SC+APP">
+    </div>
+    <div class="track-title" id="track-title">Трек не выбран</div>
+    <div class="track-artist" id="track-artist">Нативный клиент без прокси</div>
+
+    <canvas id="tg-wave-canvas"></canvas>
+    <div class="time-row">
+        <span id="time-cur">0:00</span>
+        <span id="time-tot">0:00</span>
+    </div>
+
+    <div class="transport-row">
+        <button class="icon-btn" onclick="prevTrack()">⏮</button>
+        <button class="play-circle" onclick="togglePlay()" id="play-btn">▶</button>
+        <button class="icon-btn" onclick="nextTrack()">⏭</button>
+    </div>
+</div>
+
+<audio id="audio-player"></audio>
+
+<script>
+    let playlist = [];
+    let currentIndex = -1;
+    let isPlaying = false;
+    let progress = 0;
+    let currentSpeed = 1.0;
+    let wavePhase = 0;
+
+    const audio = document.getElementById('audio-player');
+    const canvas = document.getElementById('tg-wave-canvas');
+    const ctx = canvas.getContext('2d');
+
+    function toggleTheme() {
+        const html = document.documentElement;
+        html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    }
+
+    function setAccent(color) {
+        document.documentElement.setAttribute('data-accent', color);
+    }
+
+    function searchSC() {
+        const query = document.getElementById('search-input').value.trim();
+        if (!query) return;
+
+        const listEl = document.getElementById('track-list');
+        document.getElementById('list-label').textContent = `▣ Ищем: "${query}"`;
+
+        setTimeout(() => {
+            const rawJson = window.NativeSC.searchTracks(query);
+            const data = JSON.parse(rawJson);
+
+            if (data.error || !data.collection) {
+                listEl.innerHTML = `<div style="font-size:12px; color:var(--text-muted);">${data.error || 'Ничего не найдено'}</div>`;
+                return;
+            }
+
+            const cid = data.used_client_id;
+            playlist = data.collection.map(t => ({
+                title: t.title,
+                artist: t.user?.username || 'Unknown',
+                cover: (t.artwork_url || t.user?.avatar_url || 'https://placehold.co/500x500/18181b/e53935?text=SC').replace('-large', '-t500x500'),
+                transcodings: t.media?.transcodings || [],
+                clientId: cid
+            }));
+
+            renderPlaylist();
+            if (playlist.length > 0) playTrack(0);
+        }, 50);
+    }
+
+    function playTrack(idx) {
+        if (idx < 0 || idx >= playlist.length) return;
+        currentIndex = idx;
+        const track = playlist[idx];
+
+        document.getElementById('track-title').textContent = track.title;
+        document.getElementById('island-title').textContent = track.title;
+        document.getElementById('track-artist').textContent = track.artist;
+        document.getElementById('cover-img').src = track.cover;
+        renderPlaylist();
+
+        const prog = track.transcodings.find(t => t.format?.protocol === 'progressive') || track.transcodings[0];
+        if (!prog) return;
+
+        const streamRaw = window.NativeSC.getDirectStream(prog.url, track.clientId);
+        const streamData = JSON.parse(streamRaw);
+
+        if (streamData.url) {
+            audio.src = streamData.url;
+            audio.playbackRate = currentSpeed;
+            audio.preservesPitch = false;
+            audio.play();
+        }
+    }
+
+    function renderPlaylist() {
+        const box = document.getElementById('track-list');
+        box.innerHTML = '';
+        playlist.forEach((t, i) => {
+            const div = document.createElement('div');
+            div.className = `track-item ${i === currentIndex ? 'active' : ''}`;
+            div.onclick = () => playTrack(i);
+            div.innerHTML = `
+                <img src="${t.cover}">
+                <div style="min-width:0; flex:1;">
+                    <div class="track-item-title">${t.title}</div>
+                    <div class="track-item-artist">${t.artist}</div>
+                </div>
+            `;
+            box.appendChild(div);
+        });
+    }
+
+    function togglePlay() {
+        if (currentIndex === -1 && playlist.length > 0) return playTrack(0);
+        audio.paused ? audio.play() : audio.pause();
+    }
+
+    function nextTrack() { if (playlist.length) playTrack((currentIndex + 1) % playlist.length); }
+    function prevTrack() { if (playlist.length) playTrack((currentIndex - 1 + playlist.length) % playlist.length); }
+
+    function setSpeed(rate, btn) {
+        currentSpeed = rate;
+        document.getElementById('speed-val').textContent = rate + 'x';
+        document.querySelectorAll('.speed-chip').forEach(c => c.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        audio.playbackRate = rate;
+        audio.preservesPitch = false;
+    }
+
+    audio.addEventListener('play', () => { isPlaying = true; document.getElementById('play-btn').textContent = '⏸'; });
+    audio.addEventListener('pause', () => { isPlaying = false; document.getElementById('play-btn').textContent = '▶'; });
+    audio.addEventListener('ended', nextTrack);
+    audio.addEventListener('timeupdate', () => {
+        if (audio.duration) {
+            progress = audio.currentTime / audio.duration;
+            document.getElementById('time-cur').textContent = formatMs(audio.currentTime * 1000);
+            document.getElementById('time-tot').textContent = formatMs(audio.duration * 1000);
+        }
+    });
+
+    function formatMs(ms) {
+        const sec = Math.floor(ms / 1000);
+        return `${Math.floor(sec / 60)}:${sec % 60 < 10 ? '0' : ''}${sec % 60}`;
+    }
+
+    function drawWave() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        const w = rect.width, h = rect.height, midY = h / 2, splitX = w * progress;
+        const styles = getComputedStyle(document.documentElement);
+        const activeColor = styles.getPropertyValue('--text-main').trim();
+        const inactiveColor = styles.getPropertyValue('--wave-inactive').trim();
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.beginPath(); ctx.strokeStyle = inactiveColor; ctx.lineWidth = 2.5;
+        ctx.moveTo(splitX, midY); ctx.lineTo(w - 2, midY); ctx.stroke();
+
+        if (splitX > 2) {
+            ctx.beginPath(); ctx.strokeStyle = activeColor; ctx.lineWidth = 2.8;
+            for (let x = 2; x <= splitX; x += 2) {
+                const y = midY + Math.sin(x * 0.22 - wavePhase) * (isPlaying ? 3 : 1.5);
+                x === 2 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+        if (isPlaying) wavePhase += 0.1 * currentSpeed;
+        requestAnimationFrame(drawWave);
+    }
+    requestAnimationFrame(drawWave);
+
+    canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        if (audio.duration) audio.currentTime = audio.duration * ((e.clientX - rect.left) / rect.width);
+    });
+</script>
+</body>
+</html>
