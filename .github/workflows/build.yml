@@ -14,8 +14,64 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Download Android Gradle Plugin & Build
+      - name: Generate Project Files & Build
         run: |
+          # Создаем структуру папок Android
+          mkdir -p app/src/main/java/com/untitled/scplayer
+          mkdir -p app/src/main/assets
+
+          # 1. AndroidManifest.xml
+          cat << 'EOF' > app/src/main/AndroidManifest.xml
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              package="com.untitled.scplayer">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <application
+                  android:allowBackup="true"
+                  android:icon="@mipmap/ic_launcher"
+                  android:label="SC Player"
+                  android:usesCleartextTraffic="true"
+                  android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          # 2. MainActivity.kt (мост для WebView)
+          cat << 'EOF' > app/src/main/java/com/untitled/scplayer/MainActivity.kt
+          package com.untitled.scplayer
+
+          import android.os.Bundle
+          import android.webkit.WebSettings
+          import android.webkit.WebView
+          import android.webkit.WebViewClient
+          import androidx.appcompat.app.AppCompatActivity
+
+          class MainActivity : AppCompatActivity() {
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  val webView = WebView(this)
+                  webView.settings.javaScriptEnabled = true
+                  webView.settings.domStorageEnabled = true
+                  webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                  webView.webViewClient = WebViewClient()
+                  webView.loadUrl("file:///android_asset/index.html")
+                  setContentView(webView)
+              }
+          }
+          EOF
+
+          # 3. index.html (если он у тебя уже есть в репозитории, скрипт его не затрет, 
+          # но если папки assets не было — мы её создали. 
+          # Убедись, что index.html лежит по пути app/src/main/assets/index.html)
+
+          # 4. Конфиги Gradle
           cat << 'EOF' > build.gradle
           buildscript {
               repositories {
@@ -39,7 +95,6 @@ jobs:
           include ':app'
           EOF
 
-          mkdir -p app/src/main
           cat << 'EOF' > app/build.gradle
           plugins {
               id 'com.android.application'
@@ -61,7 +116,6 @@ jobs:
           }
           EOF
 
-          # Генерируем Gradle Wrapper прямо на лету
           gradle wrapper --gradle-version 8.5
           ./gradlew assembleDebug
 
